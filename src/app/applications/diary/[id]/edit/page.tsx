@@ -29,7 +29,7 @@ export default function EditDiaryPage({ params }: EditDiaryPageProps) {
   }
 
   return (
-    <div className="container max-w-2xl py-6">
+    <div className="container max-w-2xl py-6 mx-auto">
       <h1 className="mb-6 text-3xl font-bold">日記を編集</h1>
       <DiaryForm initialData={initialData} onSubmit={updateDiary} />
     </div>

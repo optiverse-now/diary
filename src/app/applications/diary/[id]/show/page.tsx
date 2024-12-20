@@ -27,7 +27,7 @@ export default function ShowDiaryPage({ params }: ShowDiaryPageProps) {
   }
 
   return (
-    <div className="container max-w-2xl py-6">
+    <div className="container max-w-2xl py-6 mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">日記詳細</h1>
         <Button asChild>
