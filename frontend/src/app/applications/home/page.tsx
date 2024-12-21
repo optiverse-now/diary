@@ -1,6 +1,6 @@
 
 import { SidebarTrigger } from "../../../components/ui/sidebar"
-import { AppSidebar } from "../../../components/app-sidebar"
+import { AppSidebar } from "../../../components/organisms/AppSidebar"
 
 export default function Home() {
   return (

@@ -1,14 +1,15 @@
 'use client'
 
-import { AppSidebar } from '../../../../../components/app-sidebar'
+import { AppSidebar } from '../../../../../components/organisms/AppSidebar'
 import { ArrowLeft } from 'lucide-react'
-import { Button } from '../../../../../components/ui/button'
+import { Button } from '../../../../../components/atoms/Button'
 import Link from 'next/link'
-import { getDiary, updateDiary, type DiaryResponse, type UpdateDiaryInput } from '../../../../../lib/api/diary'
+import { getDiary, updateDiary } from '../../../../../features/diary/api'
+import type { DiaryResponse, CreateDiaryInput } from '../../../../../features/diary/types'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useParams, useRouter } from 'next/navigation'
-import { DiaryForm } from '../../../../../components/DiaryForm'
+import { DiaryForm } from '../../../../../components/organisms/DiaryForm'
 
 export default function EditDiaryPage() {
   const params = useParams()
@@ -22,7 +23,7 @@ export default function EditDiaryPage() {
       if (!params?.id) return
 
       try {
-        const data = await getDiary(Number(params.id))
+        const data = await getDiary(params.id as string)
         setDiary(data)
       } catch (error) {
         console.error(error)
@@ -35,12 +36,12 @@ export default function EditDiaryPage() {
     fetchDiary()
   }, [params?.id])
 
-  const handleSubmit = async (data: UpdateDiaryInput) => {
+  const handleSubmit = async (data: CreateDiaryInput) => {
     if (!params?.id) return
 
     try {
       setIsSubmitting(true)
-      await updateDiary(Number(params.id), data)
+      await updateDiary(params.id as string, data)
       toast.success('日記を更新しました')
       router.push(`/applications/diary/${params.id}/show`)
     } catch (error) {
@@ -82,11 +83,11 @@ export default function EditDiaryPage() {
     )
   }
 
-  const initialData: UpdateDiaryInput = {
+  const initialData: CreateDiaryInput = {
     title: diary.title,
     content: diary.content,
     mood: diary.mood || '',
-    tags: diary.tags || '',
+    tags: diary.tags ? diary.tags.split(',').map(tag => tag.trim()) : undefined,
   }
 
   return (
