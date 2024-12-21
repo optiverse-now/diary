@@ -7,13 +7,11 @@ import diaryRouter from './routes/diary'
 
 const app = new Hono()
 
-app.use(
-  '*',
-  cors({
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-    origin: 'http://localhost:3000',
-  })
-)
+app.use('*', cors({
+  origin: 'http://localhost:3000',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowHeaders: ['Content-Type'],
+}));
 
 app.route('/api/diaries', diaryRouter)
 app.get('/api', (c) => c.text('Hello Hono!'))

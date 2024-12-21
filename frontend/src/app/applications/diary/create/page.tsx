@@ -1,22 +1,55 @@
-import { DiaryForm } from "../../../../components/diary-form"
+'use client'
 
-interface DiaryData {
-  title: string;
-  content: string;
-  mood?: string;
-  tags?: string;
-}
+import { DiaryForm } from '../../../../components/DiaryForm'
+import { AppSidebar } from '../../../../components/app-sidebar'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '../../../../components/ui/button'
+import Link from 'next/link'
+import { createDiary, type CreateDiaryInput } from '../../../../lib/api/diary'
+import { toast } from 'sonner'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function CreateDiaryPage() {
-  async function createDiary(data: DiaryData) {
-    "use server"
-    console.log("Creating diary entry:", data)
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (data: CreateDiaryInput) => {
+    try {
+      setIsSubmitting(true)
+      const response = await createDiary(data)
+      toast.success('日記を作成しました')
+      router.push(`/applications/diary/show/${response.id}`)
+    } catch (error) {
+      console.error(error)
+      toast.error('エラーが発生しました')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="container max-w-2xl py-6 mx-auto">
-      <h1 className="mb-6 text-3xl font-bold">新規日記作成</h1>
-      <DiaryForm onSubmit={createDiary} />
+    <div className="flex min-h-screen bg-gray-50">
+      <AppSidebar />
+      <div className="flex-1 w-[calc(100vw-255px)]">
+        <div className="px-6 py-6">
+          <Button variant="ghost" asChild>
+            <Link href="/applications/diary" className="flex items-center">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              戻る
+            </Link>
+          </Button>
+        </div>
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="text-center mb-4">
+            <h1 className="text-2xl font-bold">新規日記作成</h1>
+            <p className="text-muted-foreground mt-2">
+              今日の出来事や感情を記録しましょう
+            </p>
+          </div>
+          <DiaryForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        </div>
+      </div>
     </div>
   )
 }
