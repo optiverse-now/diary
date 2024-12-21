@@ -80,7 +80,7 @@ export const DiaryList = () => {
                 </span>
               </div>
               <Link
-                href={`/diaries/${diary.id}`}
+                href={`/applications/diary/${diary.id}/show`}
                 className="mt-4 inline-block text-indigo-600 hover:text-indigo-800"
               >
                 詳細を見る →

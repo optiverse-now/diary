@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from "../../../../../components/ui/button"
 import {
   Card,
@@ -6,32 +8,70 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../../../components/ui/card"
-import { Pencil } from 'lucide-react'
+import { Pencil, ArrowLeft } from 'lucide-react'
 import Link from "next/link"
+import { getDiary, type DiaryResponse } from "../../../../../lib/api/diary"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { format } from "date-fns"
+import { ja } from "date-fns/locale"
+import { useParams } from "next/navigation"
 
-interface ShowDiaryPageProps {
-  params: {
-    id: string
+export default function ShowDiaryPage() {
+  const params = useParams()
+  const [diary, setDiary] = useState<DiaryResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDiary = async () => {
+      if (!params?.id) return
+
+      try {
+        const data = await getDiary(Number(params.id))
+        setDiary(data)
+      } catch (error) {
+        console.error(error)
+        toast.error(error instanceof Error ? error.message : 'エラーが発生しました')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDiary()
+  }, [params?.id])
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-2xl py-6 mx-auto">
+        <p>読み込み中...</p>
+      </div>
+    )
   }
-}
 
-export default function ShowDiaryPage({ params }: ShowDiaryPageProps) {
-  // This would typically fetch the diary entry from your database
-  const entry = {
-    id: params.id,
-    title: "今日の振り返り",
-    content: "今日は新しいプロジェクトを始めました。チームメンバーと一緒に計画を立て、実行に移すことができました。とても充実した一日でした。",
-    date: "2024-12-20",
-    mood: "やる気満々",
-    tags: ["仕事", "プロジェクト"],
+  if (!diary) {
+    return (
+      <div className="container max-w-2xl py-6 mx-auto">
+        <p>日記が見つかりませんでした</p>
+        <div className="mt-4">
+          <Button variant="outline" asChild>
+            <Link href="/applications/diary">戻る</Link>
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="container max-w-2xl py-6 mx-auto">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">日記詳細</h1>
+        <Button variant="ghost" asChild>
+          <Link href="/applications/diary" className="flex items-center">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            戻る
+          </Link>
+        </Button>
         <Button asChild>
-          <Link href={`/applications/diary/${entry.id}/edit`}>
+          <Link href={`/applications/diary/${diary.id}/edit`}>
             <Pencil className="mr-2 h-4 w-4" />
             編集
           </Link>
@@ -40,32 +80,36 @@ export default function ShowDiaryPage({ params }: ShowDiaryPageProps) {
       
       <Card>
         <CardHeader>
-          <CardTitle>{entry.title}</CardTitle>
-          <CardDescription>{entry.date}</CardDescription>
+          <CardTitle>{diary.title}</CardTitle>
+          {diary.createdAt && (
+            <CardDescription>
+              {format(new Date(diary.createdAt), 'yyyy年MM月dd日 HH:mm', { locale: ja })}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <h3 className="mb-2 font-semibold">内容</h3>
-            <p className="whitespace-pre-wrap">{entry.content}</p>
+            <p className="whitespace-pre-wrap">{diary.content}</p>
           </div>
           
-          {entry.mood && (
+          {diary.mood && (
             <div>
               <h3 className="mb-2 font-semibold">気分</h3>
-              <p>{entry.mood}</p>
+              <p>{diary.mood}</p>
             </div>
           )}
           
-          {entry.tags && entry.tags.length > 0 && (
+          {diary.tags && (
             <div>
               <h3 className="mb-2 font-semibold">タグ</h3>
               <div className="flex flex-wrap gap-2">
-                {entry.tags.map((tag) => (
+                {diary.tags.split(',').map((tag) => (
                   <span
                     key={tag}
                     className="rounded-full bg-secondary px-3 py-1 text-sm"
                   >
-                    {tag}
+                    {tag.trim()}
                   </span>
                 ))}
               </div>
@@ -73,12 +117,6 @@ export default function ShowDiaryPage({ params }: ShowDiaryPageProps) {
           )}
         </CardContent>
       </Card>
-
-      <div className="mt-4 flex justify-end">
-        <Button variant="outline" asChild>
-          <Link href="/applications/diary">戻る</Link>
-        </Button>
-      </div>
     </div>
   )
 }
