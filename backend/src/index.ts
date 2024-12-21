@@ -11,11 +11,11 @@ app.use(
   '*',
   cors({
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-    origin: 'http://localhost:8080',
+    origin: 'http://localhost:3000',
   })
 )
 
-app.route('/api', diaryRouter)
+app.route('/api/diaries', diaryRouter)
 app.get('/api', (c) => c.text('Hello Hono!'))
 console.log(`Server is running on port ${process.env.PORT}`)
 
