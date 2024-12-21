@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "Diary" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "mood" TEXT NOT NULL,
