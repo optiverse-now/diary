@@ -19,7 +19,7 @@ export default function CreateDiaryPage() {
       setIsSubmitting(true)
       const response = await createDiary(data)
       toast.success('日記を作成しました')
-      router.push(`/applications/diary/show/${response.id}`)
+      router.push(`/applications/diary/${response.id}/show`)
     } catch (error) {
       console.error(error)
       toast.error('エラーが発生しました')

@@ -1,37 +1,117 @@
-import { DiaryForm } from "../../../../../components/diary-form"
+'use client'
 
-interface EditDiaryPageProps {
-  params: {
-    id: string
+import { AppSidebar } from '../../../../../components/app-sidebar'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '../../../../../components/ui/button'
+import Link from 'next/link'
+import { getDiary, updateDiary, type DiaryResponse, type UpdateDiaryInput } from '../../../../../lib/api/diary'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { useParams, useRouter } from 'next/navigation'
+import { DiaryForm } from '../../../../../components/DiaryForm'
+
+export default function EditDiaryPage() {
+  const params = useParams()
+  const router = useRouter()
+  const [diary, setDiary] = useState<DiaryResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    const fetchDiary = async () => {
+      if (!params?.id) return
+
+      try {
+        const data = await getDiary(Number(params.id))
+        setDiary(data)
+      } catch (error) {
+        console.error(error)
+        toast.error(error instanceof Error ? error.message : 'エラーが発生しました')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDiary()
+  }, [params?.id])
+
+  const handleSubmit = async (data: UpdateDiaryInput) => {
+    if (!params?.id) return
+
+    try {
+      setIsSubmitting(true)
+      await updateDiary(Number(params.id), data)
+      toast.success('日記を更新しました')
+      router.push(`/applications/diary/${params.id}/show`)
+    } catch (error) {
+      console.error(error)
+      toast.error(error instanceof Error ? error.message : 'エラーが発生しました')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
-}
 
-interface DiaryData {
-  title: string;
-  content: string;
-  mood?: string;
-  tags?: string;
-}
-
-export default function EditDiaryPage({ params }: EditDiaryPageProps) {
-  // This would typically fetch the diary entry from your database
-  const initialData = {
-    title: "今日の振り返り",
-    content: "今日は新しいプロジェクトを始めました...",
-    mood: "やる気満々",
-    tags: "仕事,プロジェクト",
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <AppSidebar />
+        <div className="flex-1 w-[calc(100vw-255px)]">
+          <div className="px-6 py-6">
+            <p>読み込み中...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  async function updateDiary(data: DiaryData) {
-    "use server"
-    // Here you would typically update the data in your database
-    console.log("Updating diary entry:", params.id, data)
+  if (!diary) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <AppSidebar />
+        <div className="flex-1 w-[calc(100vw-255px)]">
+          <div className="px-6 py-6">
+            <p>日記が見つかりませんでした</p>
+            <div className="mt-4">
+              <Button variant="outline" asChild>
+                <Link href="/applications/diary">戻る</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const initialData: UpdateDiaryInput = {
+    title: diary.title,
+    content: diary.content,
+    mood: diary.mood || '',
+    tags: diary.tags || '',
   }
 
   return (
-    <div className="container max-w-2xl py-6 mx-auto">
-      <h1 className="mb-6 text-3xl font-bold">日記を編集</h1>
-      <DiaryForm initialData={initialData} onSubmit={updateDiary} />
+    <div className="flex min-h-screen bg-gray-50">
+      <AppSidebar />
+      <div className="flex-1 w-[calc(100vw-255px)]">
+        <div className="px-6 py-6">
+          <Button variant="ghost" asChild>
+            <Link href={`/applications/diary/${diary.id}/show`} className="flex items-center">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              戻る
+            </Link>
+          </Button>
+        </div>
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="text-center mb-4">
+            <h1 className="text-2xl font-bold">日記を編集</h1>
+          </div>
+          <DiaryForm 
+            initialData={initialData}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+        </div>
+      </div>
     </div>
   )
 }
