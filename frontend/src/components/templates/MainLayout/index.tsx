@@ -18,24 +18,30 @@ export const MainLayout = ({ children }: Props) => {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
+  // モバイル時のリンククリックハンドラー
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
   };
 
   return (
     <div className="flex min-h-screen">
+      {/* オーバーレイ */}
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       <div
         data-testid="sidebar"
         className={cn(
-          'group/sidebar relative flex h-full flex-col overflow-hidden border-r bg-sidebar text-sidebar-foreground w-[--sidebar-width]',
-          isMobile && 'fixed inset-y-0 left-0 z-50 transition-transform',
-          isMobile && !isOpen && 'translate-x-[-100%]'
+          'group/sidebar relative flex h-full flex-col overflow-hidden border-r bg-sidebar text-sidebar-foreground',
+          isMobile ? 'fixed inset-y-0 left-0 z-50 w-[18rem] transition-transform duration-200 ease-in-out' : 'w-[16rem]',
+          isMobile && !isOpen && '-translate-x-full'
         )}
-        style={{
-          '--sidebar-width': '16rem',
-          '--sidebar-width-mobile': '18rem',
-          '--sidebar-width-icon': '3rem',
-        } as React.CSSProperties}
       >
         <div
           data-sidebar="header"
@@ -47,10 +53,7 @@ export const MainLayout = ({ children }: Props) => {
           <div data-sidebar="menu" className="flex flex-col gap-1 p-2">
             <Link
               href="/applications/home"
-              data-sidebar="menu-button"
-              data-active={pathname === '/applications/home'}
-              data-state="closed"
-              data-size="default"
+              onClick={handleLinkClick}
               className={cn(
                 'group/menu-button peer/menu-button relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 'h-9',
@@ -63,10 +66,7 @@ export const MainLayout = ({ children }: Props) => {
             </Link>
             <Link
               href="/applications/diary"
-              data-sidebar="menu-button"
-              data-active={pathname.startsWith('/applications/diary')}
-              data-state="closed"
-              data-size="default"
+              onClick={handleLinkClick}
               className={cn(
                 'group/menu-button peer/menu-button relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 'h-9',
@@ -83,10 +83,7 @@ export const MainLayout = ({ children }: Props) => {
           <div data-sidebar="menu" className="flex flex-col gap-1 p-2">
             <Link
               href={`/applications/user/${user?.id}`}
-              data-sidebar="menu-button"
-              data-active={pathname.startsWith('/applications/user')}
-              data-state="closed"
-              data-size="default"
+              onClick={handleLinkClick}
               className={cn(
                 'group/menu-button peer/menu-button relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 'h-9',
@@ -105,7 +102,7 @@ export const MainLayout = ({ children }: Props) => {
         {isMobile && (
           <button
             data-testid="close-button"
-            onClick={handleToggle}
+            onClick={() => setIsOpen(false)}
             className="absolute right-2 top-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <X className="h-4 w-4" />
@@ -113,17 +110,24 @@ export const MainLayout = ({ children }: Props) => {
           </button>
         )}
       </div>
+
       {isMobile && (
         <button
           data-testid="menu-button"
-          onClick={handleToggle}
+          onClick={() => setIsOpen(true)}
           className="fixed left-4 top-4 z-40"
         >
           <List className="h-6 w-6" />
           <span className="sr-only">メニューを開く</span>
         </button>
       )}
-      <main className="flex-1 w-[calc(100vw-255px)] bg-gray-50">{children}</main>
+
+      <main className={cn(
+        'flex-1 bg-gray-50',
+        isMobile ? 'w-full' : 'w-[calc(100vw-16rem)]'
+      )}>
+        {children}
+      </main>
     </div>
   );
 }; 

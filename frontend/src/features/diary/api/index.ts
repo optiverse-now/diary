@@ -45,7 +45,7 @@ export const getDiaries = async (page = 1): Promise<DiaryListResponse> => {
       throw new Error('認証が必要です。再度ログインしてください');
     }
     if (response.status === 404) {
-      throw new Error('日記が見つかりません');
+      throw new Error('日記が見つかりま��ん');
     }
     const errorData = await response.json().catch(() => ({ error: '不明なエラーが発生しました' }));
     throw new Error(errorData.error || '日記の取得に失敗しました');
@@ -111,7 +111,7 @@ export const createDiary = async (input: CreateDiaryInput): Promise<DiaryRespons
   return response.json();
 };
 
-export const updateDiary = async (id: number, input: UpdateDiaryInput): Promise<DiaryResponse> => {
+export const updateDiary = async (id: string, input: UpdateDiaryInput): Promise<DiaryResponse> => {
   const token = getToken();
   if (!token) {
     throw new Error('認証が必要です');
@@ -156,7 +156,7 @@ export const deleteDiary = async (id: number): Promise<void> => {
 
   if (!response.ok) {
     if (response.status === 404) {
-      throw new Error('日記が見つかりません');
+      throw new Error('日記が見つか��ません');
     }
     throw new Error('日記の削除に失敗しました');
   }
