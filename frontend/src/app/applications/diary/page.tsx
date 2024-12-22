@@ -9,6 +9,7 @@ import { DiaryList } from '../../../components/organisms/DiaryList'
 import { Button } from '../../../components/atoms/Button'
 import { getDiaries } from '../../../features/diary/api'
 import type { DiaryResponse } from '../../../features/diary/api'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export default function DiaryPage() {
   const { user } = useAuth()
@@ -17,6 +18,7 @@ export default function DiaryPage() {
   const [error, setError] = useState<string | undefined>()
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     const fetchDiaries = async () => {
@@ -47,7 +49,7 @@ export default function DiaryPage() {
   return (
     <MainLayout>
       <div className="px-6 py-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className={`flex justify-between items-center mb-6 ${isMobile ? 'mt-8' : ''}`}>
           <h1 className="text-2xl font-bold">日記一覧</h1>
           <Button asChild>
             <Link href="/applications/diary/create" className="flex items-center gap-2">
