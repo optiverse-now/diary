@@ -49,8 +49,8 @@ export const MainLayout = ({ children }: Props) => {
         >
           <h1 className="text-xl font-bold">Let&apos;s Change</h1>
         </div>
-        <div data-sidebar="content" className="flex-1 overflow-auto">
-          <div data-sidebar="menu" className="flex flex-col gap-1 p-2">
+        <div data-sidebar="content" className="flex flex-col h-[calc(100vh-3.5rem)]">
+          <div data-sidebar="menu" className="flex-1 flex flex-col gap-1 p-2">
             <Link
               href="/applications/home"
               onClick={handleLinkClick}
@@ -78,26 +78,26 @@ export const MainLayout = ({ children }: Props) => {
               <span>日記</span>
             </Link>
           </div>
-        </div>
-        <div data-sidebar="footer" className="mt-auto">
-          <div data-sidebar="menu" className="flex flex-col gap-1 p-2">
-            <Link
-              href={`/applications/user/${user?.id}`}
-              onClick={handleLinkClick}
-              className={cn(
-                'group/menu-button peer/menu-button relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
-                'h-9',
-                pathname.startsWith('/applications/user') && 'bg-sidebar-accent text-sidebar-accent-foreground',
-                'flex items-center gap-2'
-              )}
-            >
-              <User />
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-medium">{user?.name}</span>
-                <span className="text-xs text-gray-500 truncate max-w-[160px]">{user?.email}</span>
-              </div>
-            </Link>
-          </div>
+          {user && (
+            <div className="border-t p-2">
+              <Link
+                href={`/applications/user/${user?.id}`}
+                onClick={handleLinkClick}
+                className={cn(
+                  'group/menu-button peer/menu-button relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
+                  'h-9',
+                  pathname.startsWith('/applications/user') && 'bg-sidebar-accent text-sidebar-accent-foreground',
+                  'flex items-center gap-2'
+                )}
+              >
+                <User />
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium">{user?.name}</span>
+                  <span className="text-xs text-gray-500 truncate max-w-[160px]">{user?.email}</span>
+                </div>
+              </Link>
+            </div>
+          )}
         </div>
         {isMobile && (
           <button
