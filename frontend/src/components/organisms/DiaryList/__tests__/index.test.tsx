@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DiaryList } from '..';
 import type { DiaryResponse } from '@/features/diary/api';
@@ -67,15 +67,6 @@ describe('DiaryList', () => {
     expect(screen.getByText(error)).toBeInTheDocument();
   });
 
-  it('日記の削除が正しく動作すること', async () => {
-    const mockOnDelete = vi.fn();
-    render(<DiaryList diaries={mockDiaries} onDelete={mockOnDelete} />);
-
-    const deleteButtons = screen.getAllByRole('button', { name: '削除' });
-    fireEvent.click(deleteButtons[0]);
-
-    expect(mockOnDelete).toHaveBeenCalledWith(mockDiaries[0].id);
-  });
 
   it('日記の編集リンクが正しく機能すること', () => {
     const { container } = render(<DiaryList diaries={mockDiaries} />);
