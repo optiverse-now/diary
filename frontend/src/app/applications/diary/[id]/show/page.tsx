@@ -1,14 +1,16 @@
 'use client'
 
+import { getDiary } from '../../../../../features/diary/api'
+import type { DiaryResponse } from '../../../../../features/diary/api'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { toast } from 'sonner'
+import { useParams, useRouter } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { ArrowLeft, Pencil } from 'lucide-react'
-
-import { MainLayout } from '../../../../../components/templates/MainLayout'
 import { Button } from '../../../../../components/atoms/Button'
+import { MainLayout } from '../../../../../components/templates/MainLayout'
+import { Pencil } from 'lucide-react'
+import Link from 'next/link'
 import {
   Card,
   CardContent,
@@ -16,55 +18,36 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../../../components/atoms/Card'
-import { getDiary } from '../../../../../features/diary/api'
-import type { DiaryResponse } from '../../../../../features/diary/api'
 
 export default function ShowDiaryPage() {
   const params = useParams()
+  const router = useRouter()
   const [diary, setDiary] = useState<DiaryResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | undefined>()
 
   useEffect(() => {
     const fetchDiary = async () => {
+      if (!params?.id) return
+
       try {
-        setIsLoading(true)
-        const id = params.id as string
-        if (!id) {
-          setError('無効な日記IDです')
-          return
-        }
-        const response = await getDiary(id)
-        setDiary(response)
+        const data = await getDiary(params.id as string)
+        setDiary(data)
       } catch (error) {
         console.error(error)
-        setError(error instanceof Error ? error.message : '日記の取得に失敗しました')
+        toast.error(error instanceof Error ? error.message : 'エラーが発生しました')
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchDiary()
-  }, [params.id])
-
-  if (error) {
-    return (
-      <MainLayout>
-        <div className="text-center py-12">
-          <p className="text-red-500">{error}</p>
-          <Button asChild className="mt-4">
-            <Link href="/applications/diary">一覧に戻る</Link>
-          </Button>
-        </div>
-      </MainLayout>
-    )
-  }
+  }, [params?.id])
 
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        <div className="px-6 pt-20 pb-6">
+          <p>読み込み中...</p>
         </div>
       </MainLayout>
     )
@@ -73,11 +56,8 @@ export default function ShowDiaryPage() {
   if (!diary) {
     return (
       <MainLayout>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">日記が見つかりませんでした</p>
-          <Button asChild className="mt-4">
-            <Link href="/applications/diary">一覧に戻る</Link>
-          </Button>
+        <div className="px-6 pt-20 pb-6">
+          <p>日記が見つかりませんでした</p>
         </div>
       </MainLayout>
     )
@@ -85,15 +65,7 @@ export default function ShowDiaryPage() {
 
   return (
     <MainLayout>
-      <div className="px-6 py-6">
-        <Button variant="ghost" asChild>
-          <Link href="/applications/diary" className="flex items-center">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            戻る
-          </Link>
-        </Button>
-      </div>
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="max-w-2xl mx-auto px-6 pt-20 pb-6">
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
@@ -134,6 +106,15 @@ export default function ShowDiaryPage() {
             )}
           </CardContent>
         </Card>
+        <div className="flex justify-end space-x-4 mt-8">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/applications/diary')}
+            className="w-32"
+          >
+            戻る
+          </Button>
+        </div>
       </div>
     </MainLayout>
   )
