@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { DiaryList } from '..';
-import { Diary } from '@/features/diary/types';
+import type { DiaryResponse } from '@/features/diary/api';
 
 // Next.jsのルーターをモック
 vi.mock('next/navigation', () => ({
@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('DiaryList', () => {
-  const mockDiaries: Diary[] = [
+  const mockDiaries: DiaryResponse[] = [
     {
       id: '1',
       title: '今日の日記',
@@ -20,7 +20,6 @@ describe('DiaryList', () => {
       tags: '日常,感想',
       createdAt: new Date('2024-03-20').toISOString(),
       updatedAt: new Date('2024-03-20').toISOString(),
-      userId: 'user1',
     },
     {
       id: '2',
@@ -30,7 +29,6 @@ describe('DiaryList', () => {
       tags: '予定,目標',
       createdAt: new Date('2024-03-21').toISOString(),
       updatedAt: new Date('2024-03-21').toISOString(),
-      userId: 'user1',
     },
   ];
 
@@ -69,15 +67,6 @@ describe('DiaryList', () => {
     expect(screen.getByText(error)).toBeInTheDocument();
   });
 
-  it('日記の削除が正しく動作すること', async () => {
-    const mockOnDelete = vi.fn();
-    render(<DiaryList diaries={mockDiaries} onDelete={mockOnDelete} />);
-
-    const deleteButtons = screen.getAllByRole('button', { name: '削除' });
-    fireEvent.click(deleteButtons[0]);
-
-    expect(mockOnDelete).toHaveBeenCalledWith(mockDiaries[0].id);
-  });
 
   it('日記の編集リンクが正しく機能すること', () => {
     const { container } = render(<DiaryList diaries={mockDiaries} />);

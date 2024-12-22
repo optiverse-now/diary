@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-
 import { MainLayout } from '../../../../components/templates/MainLayout'
 import { Button } from '../../../../components/atoms/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/atoms/Card'
@@ -39,8 +36,10 @@ export default function UserDetailPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        <div className="px-6 pt-20 pb-6">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+          </div>
         </div>
       </MainLayout>
     )
@@ -52,15 +51,7 @@ export default function UserDetailPage() {
 
   return (
     <MainLayout>
-      <div className="px-6 py-6">
-        <Button variant="ghost" asChild>
-          <Link href="/applications/diary" className="flex items-center">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            戻る
-          </Link>
-        </Button>
-      </div>
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="max-w-2xl mx-auto px-6 pt-20 pb-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">アカウント情報</CardTitle>
@@ -86,6 +77,15 @@ export default function UserDetailPage() {
             </div>
           </CardContent>
         </Card>
+        <div className="flex justify-end space-x-4 mt-8">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/applications/diary')}
+            className="w-32"
+          >
+            戻る
+          </Button>
+        </div>
       </div>
     </MainLayout>
   )

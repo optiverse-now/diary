@@ -1,15 +1,13 @@
 'use client'
 
-import { AppSidebar } from '../../../../../components/organisms/AppSidebar'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '../../../../../components/atoms/Button'
-import Link from 'next/link'
 import { getDiary, updateDiary } from '../../../../../features/diary/api'
-import type { DiaryResponse, CreateDiaryInput } from '../../../../../features/diary/types'
+import type { DiaryResponse } from '../../../../../features/diary/api'
+import type { CreateDiaryInput } from '../../../../../features/diary/types'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useParams, useRouter } from 'next/navigation'
 import { DiaryForm } from '../../../../../components/organisms/DiaryForm'
+import { MainLayout } from '../../../../../components/templates/MainLayout'
 
 export default function EditDiaryPage() {
   const params = useParams()
@@ -54,32 +52,21 @@ export default function EditDiaryPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <AppSidebar />
-        <div className="flex-1 w-[calc(100vw-255px)]">
-          <div className="px-6 py-6">
-            <p>読み込み中...</p>
-          </div>
+      <MainLayout>
+        <div className="px-6 py-6">
+          <p>読み込み中...</p>
         </div>
-      </div>
+      </MainLayout>
     )
   }
 
   if (!diary) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <AppSidebar />
-        <div className="flex-1 w-[calc(100vw-255px)]">
-          <div className="px-6 py-6">
-            <p>日記が見つかりませんでした</p>
-            <div className="mt-4">
-              <Button variant="outline" asChild>
-                <Link href="/applications/diary">戻る</Link>
-              </Button>
-            </div>
-          </div>
+      <MainLayout>
+        <div className="px-6 py-6">
+          <p>日記が見つかりませんでした</p>
         </div>
-      </div>
+      </MainLayout>
     )
   }
 
@@ -87,33 +74,22 @@ export default function EditDiaryPage() {
     title: diary.title,
     content: diary.content,
     mood: diary.mood || '',
-    tags: diary.tags ? diary.tags.split(',').map(tag => tag.trim()) : undefined,
+    tags: diary.tags || '',
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <AppSidebar />
-      <div className="flex-1 w-[calc(100vw-255px)]">
-        <div className="px-6 py-6">
-          <Button variant="ghost" asChild>
-            <Link href={`/applications/diary/${diary.id}/show`} className="flex items-center">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              戻る
-            </Link>
-          </Button>
+    <MainLayout>
+      <div className="max-w-2xl mx-auto px-6 py-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold">日記を編集</h1>
         </div>
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="text-center mb-4">
-            <h1 className="text-2xl font-bold">日記を編集</h1>
-          </div>
-          <DiaryForm 
-            initialData={initialData}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-          />
-        </div>
+        <DiaryForm 
+          initialData={initialData}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
       </div>
-    </div>
+    </MainLayout>
   )
 }
 
