@@ -23,15 +23,22 @@ export default function ShowDiaryPage() {
   const params = useParams()
   const [diary, setDiary] = useState<DiaryResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | undefined>()
 
   useEffect(() => {
     const fetchDiary = async () => {
       try {
         setIsLoading(true)
-        const response = await getDiary(Number(params.id))
+        const id = params.id as string
+        if (!id) {
+          setError('無効な日記IDです')
+          return
+        }
+        const response = await getDiary(id)
         setDiary(response)
       } catch (error) {
         console.error(error)
+        setError(error instanceof Error ? error.message : '日記の取得に失敗しました')
       } finally {
         setIsLoading(false)
       }
@@ -39,6 +46,19 @@ export default function ShowDiaryPage() {
 
     fetchDiary()
   }, [params.id])
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="text-center py-12">
+          <p className="text-red-500">{error}</p>
+          <Button asChild className="mt-4">
+            <Link href="/applications/diary">一覧に戻る</Link>
+          </Button>
+        </div>
+      </MainLayout>
+    )
+  }
 
   if (isLoading) {
     return (

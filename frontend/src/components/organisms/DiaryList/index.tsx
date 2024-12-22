@@ -8,7 +8,17 @@ import { Skeleton } from '@/components/atoms/Skeleton';
 import { ja } from 'date-fns/locale';
 import { Button } from '@/components/atoms/Button';
 import { Pencil } from 'lucide-react';
-import { DiaryListProps } from '@/features/diary/types';
+import type { DiaryResponse } from '@/features/diary/api';
+
+type DiaryListProps = {
+  diaries: DiaryResponse[];
+  isLoading?: boolean;
+  error?: string;
+  onDelete?: (id: number) => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+};
 
 const DiaryListSkeleton = () => {
   return (
@@ -30,23 +40,26 @@ export const DiaryList: React.FC<DiaryListProps> = ({
   diaries,
   isLoading = false,
   error,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
 }) => {
   if (isLoading) {
     return <DiaryListSkeleton />;
-  }
-
-  if (!diaries || diaries.length === 0) {
-    return (
-      <div className="text-center text-gray-500 p-4">
-        日記がありません
-      </div>
-    );
   }
 
   if (error) {
     return (
       <div className="text-center text-red-500 p-4">
         {error}
+      </div>
+    );
+  }
+
+  if (!diaries || diaries.length === 0) {
+    return (
+      <div className="text-center text-gray-500 p-4">
+        日記がありません
       </div>
     );
   }
@@ -94,6 +107,27 @@ export const DiaryList: React.FC<DiaryListProps> = ({
           )}
         </Card>
       ))}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          <Button
+            variant="outline"
+            onClick={() => onPageChange?.(currentPage - 1)}
+            disabled={currentPage <= 1}
+          >
+            前へ
+          </Button>
+          <span className="flex items-center px-4">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() => onPageChange?.(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+          >
+            次へ
+          </Button>
+        </div>
+      )}
     </div>
   );
 }; 
