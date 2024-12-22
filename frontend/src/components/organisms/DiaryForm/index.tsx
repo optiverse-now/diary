@@ -39,7 +39,7 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
       title: initialData?.title ?? '',
       content: initialData?.content ?? '',
       mood: initialData?.mood ?? '',
-      tags: initialData?.tags?.join(',') ?? '',
+      tags: initialData?.tags ?? '',
     },
   })
 
@@ -48,7 +48,7 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
       title: values.title,
       content: values.content,
       mood: values.mood || undefined,
-      tags: values.tags ? values.tags.split(',').map((tag) => tag.trim()) : undefined,
+      tags: values.tags || undefined,
     }
     await onSubmit(data)
   }

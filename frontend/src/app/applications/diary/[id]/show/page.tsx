@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { ArrowLeft, Pencil } from 'lucide-react'
 
@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from '../../../../../components/atoms/Card'
 import { getDiary } from '../../../../../features/diary/api'
-import type { DiaryResponse } from '../../../../../features/diary/types'
+import type { DiaryResponse } from '../../../../../features/diary/api'
 
 export default function ShowDiaryPage() {
   const params = useParams()
@@ -28,7 +28,7 @@ export default function ShowDiaryPage() {
     const fetchDiary = async () => {
       try {
         setIsLoading(true)
-        const response = await getDiary(params.id as string)
+        const response = await getDiary(Number(params.id))
         setDiary(response)
       } catch (error) {
         console.error(error)
@@ -80,7 +80,7 @@ export default function ShowDiaryPage() {
               <div>
                 <CardTitle className="text-2xl">{diary.title}</CardTitle>
                 <CardDescription>
-                  {format(new Date(diary.created_at), 'PPP', { locale: ja })}
+                  {format(parseISO(diary.createdAt), 'PPP', { locale: ja })}
                 </CardDescription>
               </div>
               <Button variant="ghost" size="icon" asChild>

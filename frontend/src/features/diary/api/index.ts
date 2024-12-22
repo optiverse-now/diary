@@ -1,65 +1,131 @@
-import type { CreateDiaryInput, DiaryListResponse, DiaryResponse } from '../types'
+import { getToken } from '@/features/auth/utils/token';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'
+export type DiaryResponse = {
+  id: number;
+  title: string;
+  content: string;
+  mood?: string;
+  tags?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
-export async function getDiaries(page = 1): Promise<DiaryListResponse> {
-  const response = await fetch(`${API_URL}?page=${page}`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch diaries')
+export type DiaryListResponse = {
+  diaries: DiaryResponse[];
+  totalPages: number;
+};
+
+export type CreateDiaryInput = {
+  title: string;
+  content: string;
+};
+
+export type UpdateDiaryInput = {
+  title: string;
+  content: string;
+};
+
+export const getDiaries = async (page = 1): Promise<DiaryListResponse> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('認証が必要です');
   }
-  return response.json()
-}
 
-export async function getDiary(id: string): Promise<DiaryResponse> {
-  const response = await fetch(`${API_URL}/${id}`)
+  const response = await fetch(`/api/diaries?page=${page}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   if (!response.ok) {
-    throw new Error('Failed to fetch diary')
+    const error = await response.json();
+    throw new Error(error.message);
   }
-  return response.json()
-}
 
-export async function createDiary(data: CreateDiaryInput): Promise<DiaryResponse> {
-  const response = await fetch(API_URL, {
+  return response.json();
+};
+
+export const getDiary = async (id: number): Promise<DiaryResponse> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('認証が必要です');
+  }
+
+  const response = await fetch(`/api/diaries/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+
+  return response.json();
+};
+
+export const createDiary = async (input: CreateDiaryInput): Promise<DiaryResponse> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('認証が必要です');
+  }
+
+  const response = await fetch('/api/diaries', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      ...data,
-      tags: data.tags?.join(',') || '',
-    }),
-  })
-  if (!response.ok) {
-    throw new Error('Failed to create diary')
-  }
-  return response.json()
-}
+    body: JSON.stringify(input),
+  });
 
-export async function updateDiary(
-  id: string,
-  data: CreateDiaryInput
-): Promise<DiaryResponse> {
-  const response = await fetch(`${API_URL}/${id}`, {
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+
+  return response.json();
+};
+
+export const updateDiary = async (id: number, input: UpdateDiaryInput): Promise<DiaryResponse> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('認証が必要です');
+  }
+
+  const response = await fetch(`/api/diaries/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      ...data,
-      tags: data.tags?.join(',') || '',
-    }),
-  })
-  if (!response.ok) {
-    throw new Error('Failed to update diary')
-  }
-  return response.json()
-}
+    body: JSON.stringify(input),
+  });
 
-export async function deleteDiary(id: string): Promise<void> {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-  })
   if (!response.ok) {
-    throw new Error('Failed to delete diary')
+    const error = await response.json();
+    throw new Error(error.message);
   }
-}
+
+  return response.json();
+};
+
+export const deleteDiary = async (id: number): Promise<void> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('認証が必要です');
+  }
+
+  const response = await fetch(`/api/diaries/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+};

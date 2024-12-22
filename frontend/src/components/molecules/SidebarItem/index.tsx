@@ -147,6 +147,19 @@ const SidebarContent = React.forwardRef<
 ))
 SidebarContent.displayName = 'SidebarContent'
 
+const SidebarFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="footer"
+    className={cn('mt-auto', className)}
+    {...props}
+  />
+))
+SidebarFooter.displayName = 'SidebarFooter'
+
 const SidebarMenu = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -252,5 +265,6 @@ export {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
+  SidebarFooter,
   useSidebar,
 } 
