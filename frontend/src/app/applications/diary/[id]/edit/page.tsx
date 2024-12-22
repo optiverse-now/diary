@@ -1,8 +1,5 @@
 'use client'
 
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '../../../../../components/atoms/Button'
-import Link from 'next/link'
 import { getDiary, updateDiary } from '../../../../../features/diary/api'
 import type { DiaryResponse } from '../../../../../features/diary/api'
 import type { CreateDiaryInput } from '../../../../../features/diary/types'
@@ -68,11 +65,6 @@ export default function EditDiaryPage() {
       <MainLayout>
         <div className="px-6 py-6">
           <p>日記が見つかりませんでした</p>
-          <div className="mt-4">
-            <Button variant="outline" asChild>
-              <Link href="/applications/diary">戻る</Link>
-            </Button>
-          </div>
         </div>
       </MainLayout>
     )
@@ -87,16 +79,8 @@ export default function EditDiaryPage() {
 
   return (
     <MainLayout>
-      <div className="px-6 py-6">
-        <Button variant="ghost" asChild>
-          <Link href={`/applications/diary/${diary.id}/show`} className="flex items-center">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            戻る
-          </Link>
-        </Button>
-      </div>
-      <div className="max-w-2xl mx-auto px-6">
-        <div className="text-center mb-4">
+      <div className="max-w-2xl mx-auto px-6 py-6">
+        <div className="text-center mb-6">
           <h1 className="text-2xl font-bold">日記を編集</h1>
         </div>
         <DiaryForm 
