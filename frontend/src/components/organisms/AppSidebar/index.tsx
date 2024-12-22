@@ -1,8 +1,9 @@
 'use client'
 
-import { Book, Home } from 'lucide-react'
+import { Book, Home, User } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '../../../features/auth/contexts/AuthContext'
 
 import {
   Sidebar,
@@ -10,10 +11,12 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
+  SidebarFooter,
 } from '../../../components/molecules/SidebarItem'
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
 
   return (
     <Sidebar defaultOpen>
@@ -44,6 +47,30 @@ export function AppSidebar() {
           </SidebarMenuButton>
         </SidebarMenu>
       </SidebarContent>
+      {user && (
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith(`/applications/user/${user.id}`)}
+              tooltip="アカウント"
+            >
+              <Link
+                href={`/applications/user/${user.id}`}
+                className="flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium">{user.name}</span>
+                  <span className="text-xs text-gray-500 truncate max-w-[160px]">
+                    {user.email}
+                  </span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenu>
+        </SidebarFooter>
+      )}
     </Sidebar>
   )
 } 
