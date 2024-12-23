@@ -19,9 +19,9 @@ type DiaryListProps = {
 
 const DiaryListSkeleton = () => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {[...Array(2)].map((_, i) => (
-        <Card key={i} className="p-4">
+        <Card key={i} className="p-6">
           <div data-testid="diary-skeleton">
             <Skeleton className="h-6 w-3/4 mb-2" />
             <Skeleton className="h-4 w-1/4 mb-4" />
@@ -47,7 +47,7 @@ export const DiaryList: React.FC<DiaryListProps> = ({
 
   if (error) {
     return (
-      <div className="text-center text-red-500 p-4">
+      <div className="text-center text-red-500 p-6">
         {error}
       </div>
     );
@@ -55,37 +55,37 @@ export const DiaryList: React.FC<DiaryListProps> = ({
 
   if (!diaries || diaries.length === 0) {
     return (
-      <div className="text-center text-gray-500 p-4">
+      <div className="text-center text-gray-500 p-6">
         日記がありません
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {diaries.map((diary) => (
         <Link
           key={diary.id}
           href={`/applications/diary/${diary.id}/show`}
           className="block transition-colors hover:bg-gray-50"
         >
-          <Card className="p-4">
-            <h2 className="text-lg font-medium mb-1">{diary.title}</h2>
-            <p className="text-sm text-gray-500 mb-2">
+          <Card className="p-6">
+            <h2 className="text-lg font-medium mb-2">{diary.title}</h2>
+            <p className="text-sm text-gray-500 mb-4">
               {format(parseISO(diary.createdAt), 'PPP', { locale: ja })}
             </p>
             <p className="text-gray-600 line-clamp-3">{diary.content}</p>
             {(diary.mood || diary.tags) && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-6 flex flex-wrap gap-2">
                 {diary.mood && (
-                  <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                  <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 mt-4 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                     {diary.mood}
                   </span>
                 )}
                 {diary.tags && diary.tags.split(',').map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                    className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 mt-4 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
                   >
                     {tag.trim()}
                   </span>
@@ -96,7 +96,7 @@ export const DiaryList: React.FC<DiaryListProps> = ({
         </Link>
       ))}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex justify-center gap-2 mt-8">
           <button
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => onPageChange?.(currentPage - 1)}
