@@ -6,7 +6,7 @@ type AuthResponse = {
 };
 
 export const login = async (input: SignInInput): Promise<AuthResponse> => {
-  const response = await fetch('http://localhost:3001/api/auth/sign-in', {
+  const response = await fetch('http://localhost:8080/api/auth/signin', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -20,7 +20,7 @@ export const login = async (input: SignInInput): Promise<AuthResponse> => {
 };
 
 export const signUp = async (input: SignUpInput): Promise<AuthResponse> => {
-  const response = await fetch('http://localhost:3001/api/auth/sign-up', {
+  const response = await fetch('http://localhost:8080/api/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -34,7 +34,7 @@ export const signUp = async (input: SignUpInput): Promise<AuthResponse> => {
 };
 
 export const logout = async (): Promise<void> => {
-  const response = await fetch('http://localhost:3001/api/auth/logout', {
+  const response = await fetch('http://localhost:8080/api/auth/logout', {
     method: 'POST',
   });
 

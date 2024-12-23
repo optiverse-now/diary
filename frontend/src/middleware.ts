@@ -3,18 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
-  const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
   const isApplicationPage = request.nextUrl.pathname.startsWith('/applications');
-
-  // 認証ページにアクセスしようとしている場合
-  if (isAuthPage) {
-    // すでにログインしている場合は日記一覧ページにリダイレクト
-    if (token) {
-      return NextResponse.redirect(new URL('/applications/diary', request.url));
-    }
-    // ログインしていない場合はそのまま認証ページを表示
-    return NextResponse.next();
-  }
 
   // アプリケーションページにアクセスしようとしている場合
   if (isApplicationPage) {

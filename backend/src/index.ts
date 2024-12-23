@@ -8,18 +8,16 @@ import diary from './routes/diary';
 const app = new Hono();
 
 // 環境変数の検証
-const requiredEnvVars = ['PORT', 'JWT_SECRET', 'DATABASE_URL', 'FRONTEND_URL'] as const;
+const requiredEnvVars = ['PORT', 'JWT_SECRET', 'DATABASE_URL'] as const;
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     throw new Error(`環境変数${envVar}が設定されていません`);
   }
 }
 
-const frontendUrl = process.env.FRONTEND_URL as string;
-
 // CORSの設定
 app.use('/*', cors({
-  origin: frontendUrl,
+  origin: ['http://localhost:3000'],
   credentials: true,
 }));
 
