@@ -60,8 +60,8 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
           control={form.control}
           name="title"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base">タイトル</FormLabel>
+            <FormItem className="mt-4">
+              <FormLabel className="text-base font-medium">タイトル</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
@@ -74,13 +74,12 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="content"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base">内容</FormLabel>
+            <FormItem className="mt-4">
+              <FormLabel className="text-base font-medium">内容</FormLabel>
               <FormControl>
                 <textarea
                   {...field}
@@ -100,8 +99,8 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
             control={form.control}
             name="mood"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base">今日の気分</FormLabel>
+              <FormItem className="mt-4">
+                <FormLabel className="text-base font-medium">今日の気分</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -119,8 +118,8 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
             control={form.control}
             name="tags"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base">タグ</FormLabel>
+              <FormItem className="mt-4">
+                <FormLabel className="text-base font-medium">タグ</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
