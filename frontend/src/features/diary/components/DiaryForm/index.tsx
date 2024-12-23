@@ -141,11 +141,11 @@ export function DiaryForm({ initialData, onSubmit, isSubmitting = false }: Diary
             variant="outline"
             onClick={() => router.back()}
             disabled={isSubmitting}
-            className="w-32"
+            className="w-32 mt-4"
           >
             キャンセル
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="w-32">
+          <Button type="submit" disabled={isSubmitting} className="w-32 mt-4">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             保存
           </Button>
