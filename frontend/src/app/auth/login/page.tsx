@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Card } from '@/components/atoms/Card';
+import { Card } from '@/components/ui/Card';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 
 export default function LoginPage() {

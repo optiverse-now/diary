@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsMobile } from '@/shared/hooks/use-mobile'
 
-import { MainLayout } from '../../../../components/templates/MainLayout'
-import { DiaryForm } from '../../../../components/organisms/DiaryForm'
-import { createDiary } from '../../../../features/diary/api'
-import type { CreateDiaryInput } from '../../../../features/diary/types'
+import { MainLayout } from '@/components/layouts'
+import { DiaryForm } from '@/features/diary/components/DiaryForm'
+import { createDiary } from '@/features/diary/api'
+import type { CreateDiaryInput } from '@/features/diary/types'
 
 export default function CreateDiaryPage() {
   const router = useRouter()

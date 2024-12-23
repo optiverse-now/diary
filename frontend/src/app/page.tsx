@@ -1,9 +1,12 @@
 'use client'
 
-import { DiaryList } from '../components/DiaryList'
+import { useState } from 'react'
+import { DiaryList } from '@/features/diary/components/DiaryList'
 import Link from 'next/link'
 
 export default function HomePage() {
+  const [currentPage, setCurrentPage] = useState(1)
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -15,7 +18,14 @@ export default function HomePage() {
           新規作成
         </Link>
       </div>
-      <DiaryList />
+      <DiaryList
+        diaries={[]}
+        isLoading={false}
+        error={undefined}
+        currentPage={currentPage}
+        totalPages={1}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 } 

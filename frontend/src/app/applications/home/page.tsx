@@ -1,6 +1,6 @@
 'use client'
 
-import { MainLayout } from "../../../components/templates/MainLayout"
+import { MainLayout } from "@/components/layouts"
 
 export default function Home() {
   return (

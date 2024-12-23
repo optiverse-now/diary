@@ -6,8 +6,8 @@ import type { CreateDiaryInput } from '../../../../../features/diary/types'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useParams, useRouter } from 'next/navigation'
-import { DiaryForm } from '../../../../../components/organisms/DiaryForm'
-import { MainLayout } from '../../../../../components/templates/MainLayout'
+import { DiaryForm } from '@/features/diary/components/DiaryForm'
+import { MainLayout } from '@/components/layouts'
 
 export default function EditDiaryPage() {
   const params = useParams()

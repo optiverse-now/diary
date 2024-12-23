@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { MainLayout } from '../../../../components/templates/MainLayout'
-import { Button } from '../../../../components/atoms/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/atoms/Card'
-import { useAuth } from '../../../../features/auth/contexts/AuthContext'
+import { MainLayout } from '@/components/layouts'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
 
 export default function UserDetailPage() {
   const params = useParams()

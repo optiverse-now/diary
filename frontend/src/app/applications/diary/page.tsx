@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { MainLayout } from '../../../components/templates/MainLayout'
-import { DiaryList } from '../../../components/organisms/DiaryList'
-import { Button } from '../../../components/atoms/Button'
-import { getDiaries } from '../../../features/diary/api'
-import type { DiaryResponse } from '../../../features/diary/api'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { MainLayout } from '@/components/layouts'
+import { DiaryList } from '@/features/diary/components/DiaryList'
+import { Button } from '@/components/ui/Button'
+import { getDiaries } from '@/features/diary/api'
+import type { DiaryResponse } from '@/features/diary/api'
+import { useIsMobile } from '@/shared/hooks/use-mobile'
 
 export default function DiaryPage() {
   const { user } = useAuth()

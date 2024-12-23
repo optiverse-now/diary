@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Card } from '@/components/atoms/Card';
+import { Card } from '@/components/ui/Card';
 import { SignUpForm } from '@/features/auth/components/SignUpForm';
 
 export default function SignUpPage() {

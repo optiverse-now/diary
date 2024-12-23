@@ -7,8 +7,8 @@ import { toast } from 'sonner'
 import { useParams, useRouter } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { ja } from 'date-fns/locale'
-import { Button } from '../../../../../components/atoms/Button'
-import { MainLayout } from '../../../../../components/templates/MainLayout'
+import { Button } from '@/components/ui/Button'
+import { MainLayout } from '@/components/layouts'
 import { Pencil } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -17,7 +17,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../../../../components/atoms/Card'
+} from '@/components/ui/Card'
 
 export default function ShowDiaryPage() {
   const params = useParams()

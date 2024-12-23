@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { signIn } from '../api';
-import { useAuth } from '../contexts/AuthContext';
-import { SignInInput, signInSchema } from '../types';
+import { signIn } from '@/features/auth/api';
+import { useAuth } from '@/features/auth/contexts/AuthContext';
+import { SignInInput, signInSchema } from '@/features/auth/types';
 
 export const LoginForm = () => {
   const router = useRouter();
