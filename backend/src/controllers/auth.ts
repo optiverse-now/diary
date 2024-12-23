@@ -25,7 +25,7 @@ export const signUp = async (c: Context) => {
     });
 
     if (existingUser) {
-      return c.json({ error: '既に登録されているメールアドレスです' }, 400);
+      return c.json({ error: 'このメールアドレスは既に登録されています' }, 400);
     }
 
     // パスワードのハッシュ化
@@ -63,6 +63,12 @@ export const signIn = async (c: Context) => {
     // ユーザーの検索
     const user = await prisma.user.findUnique({
       where: { email: validatedData.email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+      },
     });
 
     if (!user || !user.password) {

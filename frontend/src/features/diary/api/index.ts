@@ -1,163 +1,95 @@
 import { getToken } from '@/features/auth/utils/token';
+import { CreateDiaryInput, Diary, DiaryListResponse, UpdateDiaryInput } from './types';
 
-export type DiaryResponse = {
-  id: string;
-  title: string;
-  content: string;
-  mood?: string;
-  tags?: string;
-  createdAt: string;
-  updatedAt: string;
-};
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export type DiaryListResponse = {
-  diaries: DiaryResponse[];
-  totalPages: number;
-};
-
-export type CreateDiaryInput = {
-  title: string;
-  content: string;
-};
-
-export type UpdateDiaryInput = {
-  title: string;
-  content: string;
-};
-
-export const getDiaries = async (page = 1): Promise<DiaryListResponse> => {
+export const createDiary = async (diary: CreateDiaryInput): Promise<Diary> => {
   const token = getToken();
-  if (!token) {
-    throw new Error('認証が必要です');
-  }
-
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/diaries?page=${page}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error('認証が必要です。再度ログインしてください');
-    }
-    if (response.status === 404) {
-      throw new Error('日記が見つかりま��ん');
-    }
-    const errorData = await response.json().catch(() => ({ error: '不明なエラーが発生しました' }));
-    throw new Error(errorData.error || '日記の取得に失敗しました');
-  }
-
-  const data = await response.json();
-  return {
-    diaries: data.diaries,
-    totalPages: data.pagination.total
-  };
-};
-
-export const getDiary = async (id: string): Promise<DiaryResponse> => {
-  const token = getToken();
-  if (!token) {
-    throw new Error('認証が必要です');
-  }
-
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/diaries/${id}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error('日記が見つかりません');
-    }
-    throw new Error('日記の取得に失敗しました');
-  }
-
-  return response.json();
-};
-
-export const createDiary = async (input: CreateDiaryInput): Promise<DiaryResponse> => {
-  const token = getToken();
-  if (!token) {
-    throw new Error('認証が必要です');
-  }
-
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/diaries`, {
+  const response = await fetch(`${API_BASE_URL}/api/diaries`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    credentials: 'include',
-    body: JSON.stringify(input),
+    body: JSON.stringify(diary),
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error('認証が必要です');
-    }
-    throw new Error('日記の作成に失敗しました');
+    const error = await response.json();
+    throw new Error(error.message);
   }
 
   return response.json();
 };
 
-export const updateDiary = async (id: string, input: UpdateDiaryInput): Promise<DiaryResponse> => {
+export const getDiary = async (id: string): Promise<Diary> => {
   const token = getToken();
-  if (!token) {
-    throw new Error('認証が必要です');
+  const response = await fetch(`${API_BASE_URL}/api/diaries/${id}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message);
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/diaries/${id}`, {
+  return response.json();
+};
+
+export const updateDiary = async (id: string, diary: UpdateDiaryInput): Promise<Diary> => {
+  const token = getToken();
+  const response = await fetch(`${API_BASE_URL}/api/diaries/${id}`, {
     method: 'PUT',
     headers: {
-      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    credentials: 'include',
-    body: JSON.stringify(input),
+    body: JSON.stringify(diary),
   });
 
   if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error('日記が見つかりません');
-    }
-    throw new Error('日記の更新に失敗しました');
+    const error = await response.json();
+    throw new Error(error.message);
   }
 
   return response.json();
 };
 
-export const deleteDiary = async (id: number): Promise<void> => {
+export const deleteDiary = async (id: string): Promise<void> => {
   const token = getToken();
-  if (!token) {
-    throw new Error('認証が必要です');
-  }
-
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/diaries/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/diaries/${id}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    credentials: 'include',
   });
 
   if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error('日記が見つか��ません');
-    }
-    throw new Error('日記の削除に失敗しました');
+    const error = await response.json();
+    throw new Error(error.message);
   }
+};
+
+export const getDiaries = async (page: number = 1): Promise<{ diaries: Diary[]; totalPages: number }> => {
+  const token = getToken();
+  const response = await fetch(`${API_BASE_URL}/api/diaries?page=${page}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+
+  const data: DiaryListResponse = await response.json();
+  return {
+    diaries: data.diaries,
+    totalPages: data.pagination.total,
+  };
 };

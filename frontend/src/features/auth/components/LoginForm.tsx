@@ -11,6 +11,17 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { signIn } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/contexts/AuthContext';
 import { SignInInput, signInSchema } from '@/features/auth/types';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email('メールアドレスの形式が正しくありません'),
+  password: z
+    .string()
+    .min(8, 'パスワードは8文字以上である必要があります')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'パスワードは大文字、小文字、数字を含める必要があります'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm = () => {
   const router = useRouter();
@@ -18,15 +29,15 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<SignInInput>({
-    resolver: zodResolver(signInSchema),
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
 
-  const onSubmit = async (data: SignInInput) => {
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError(null);
 

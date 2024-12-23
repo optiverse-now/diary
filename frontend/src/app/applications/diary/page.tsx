@@ -1,19 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth } from '@/features/auth/contexts/AuthContext'
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
-import { MainLayout } from '@/components/layouts'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { DiaryList } from '@/features/diary/components/DiaryList'
-import { Button } from '@/components/ui/Button'
+import { MainLayout } from '@/components/layouts'
 import { getDiaries } from '@/features/diary/api'
-import type { DiaryResponse } from '@/features/diary/api'
+import type { Diary } from '@/features/diary/api/types'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Plus } from 'lucide-react'
 import { useIsMobile } from '@/shared/hooks/use-mobile'
 
 export default function DiaryPage() {
-  const { user } = useAuth()
-  const [diaries, setDiaries] = useState<DiaryResponse[]>([])
+  const router = useRouter()
+  const { isAuthenticated } = useAuth()
+  const [diaries, setDiaries] = useState<Diary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | undefined>()
   const [currentPage, setCurrentPage] = useState(1)
@@ -21,13 +23,12 @@ export default function DiaryPage() {
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    const fetchDiaries = async () => {
-      if (!user?.id) {
-        setError('ログインが必要です')
-        setIsLoading(false)
-        return
-      }
+    if (!isAuthenticated) {
+      router.push('/auth/login')
+      return
+    }
 
+    const fetchDiaries = async () => {
       try {
         setIsLoading(true)
         const response = await getDiaries(currentPage)
@@ -44,7 +45,11 @@ export default function DiaryPage() {
     }
 
     fetchDiaries()
-  }, [user?.id, currentPage])
+  }, [isAuthenticated, router, currentPage])
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <MainLayout>

@@ -1,130 +1,110 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { SignUpForm } from '../SignUpForm'
-import { AuthContext } from '@/features/auth/contexts/AuthContext'
-import { vi } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
+import { SignUpForm } from '../SignUpForm';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthProvider } from '../../contexts/AuthContext';
 
-// Next.jsのルーターをモック
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
   }),
-}))
+}));
 
-// toastをモック
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-  },
-}))
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: vi.fn(),
+}));
 
 describe('SignUpForm', () => {
-  const mockSignUp = vi.fn()
-  const mockSetAuth = vi.fn()
-  const mockClearAuth = vi.fn()
-
   beforeEach(() => {
-    vi.clearAllMocks()
-    render(
-      <AuthContext.Provider value={{
-        signUp: mockSignUp,
-        user: null,
-        token: null,
-        setAuth: mockSetAuth,
-        clearAuth: mockClearAuth,
-      }}>
-        <SignUpForm />
-      </AuthContext.Provider>
-    )
-  })
+    vi.clearAllMocks();
+  });
 
-  it('フォームが正しくレンダリングされる', () => {
-    expect(screen.getByLabelText('名前')).toBeInTheDocument()
-    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument()
-    expect(screen.getByLabelText('パスワード')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '新規登録' })).toBeInTheDocument()
-  })
+  const renderSignUpForm = () => {
+    const signUp = vi.fn();
+    vi.mocked(useAuth).mockReturnValue({
+      login: vi.fn(),
+      signUp,
+      logout: vi.fn(),
+      user: null,
+      isAuthenticated: false,
+    });
 
-  it('必須フィールドが空の場合にエラーを表示する', async () => {
-    const submitButton = screen.getByRole('button', { name: '新規登録' })
-    fireEvent.click(submitButton)
+    return {
+      signUp,
+      ...render(
+        <AuthProvider>
+          <SignUpForm />
+        </AuthProvider>
+      ),
+    };
+  };
 
-    await waitFor(() => {
-      const errorMessages = screen.getAllByRole('alert')
-      expect(errorMessages).toHaveLength(3)
-      expect(errorMessages[0]).toHaveTextContent('名前を入力してください')
-      expect(errorMessages[1]).toHaveTextContent('メールアドレスを入力してください')
-      expect(errorMessages[2]).toHaveTextContent('パスワードは8文字以上で入力してください')
-    })
-  })
+  it('正しい入力でフォームを送信できる', async () => {
+    const { signUp } = renderSignUpForm();
 
-  it('無効なメールアドレスの場合にエラーを表示する', async () => {
-    const nameInput = screen.getByLabelText('名前')
-    const emailInput = screen.getByLabelText('メールアドレス')
-    const passwordInput = screen.getByLabelText('パスワード')
-
-    // 有効な値を入力
-    fireEvent.change(nameInput, { target: { value: 'Test User' } })
-    fireEvent.change(passwordInput, { target: { value: 'Password123' } })
-
-    // 無効なメールアドレスを入力
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } })
-    fireEvent.blur(emailInput)
-
-    // フォームを送信
-    const submitButton = screen.getByRole('button', { name: '新規登録' })
-    fireEvent.click(submitButton)
-
-    // バリデーションエラーが表示されるまで待機
-    await waitFor(() => {
-      const errorMessages = screen.getAllByRole('alert')
-      expect(errorMessages).toHaveLength(1)
-      expect(errorMessages[0]).toHaveTextContent('正しいメールアドレスを入力してください')
-    })
-  })
-
-  it('パスワードが短すぎる場合にエラーを表示する', async () => {
-    const nameInput = screen.getByLabelText('名前')
-    const emailInput = screen.getByLabelText('メールアドレス')
-    const passwordInput = screen.getByLabelText('パスワード')
-
-    // 有効な値を入力
-    fireEvent.change(nameInput, { target: { value: 'Test User' } })
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-
-    // 無効なパスワードを入力
-    fireEvent.change(passwordInput, { target: { value: '123' } })
-    fireEvent.blur(passwordInput)
-
-    // フォームを送信
-    const submitButton = screen.getByRole('button', { name: '新規登録' })
-    fireEvent.click(submitButton)
+    await userEvent.type(screen.getByLabelText('名前'), '山田 太郎');
+    await userEvent.type(screen.getByLabelText('メールアドレス'), 'test@example.com');
+    await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+    await userEvent.type(screen.getByLabelText('パスワード（確認）'), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
     await waitFor(() => {
-      const errorMessages = screen.getAllByRole('alert')
-      expect(errorMessages).toHaveLength(1)
-      expect(errorMessages[0]).toHaveTextContent('パスワードは8文字以上で入力してください')
-    })
-  })
+      expect(signUp).toHaveBeenCalledWith({
+        name: '山田 太郎',
+        email: 'test@example.com',
+        password: 'Password123',
+        confirmPassword: 'Password123',
+      });
+    });
+  });
 
-  it('既存のメールアドレスでサインアップを試みるとエラーを表示する', async () => {
-    const nameInput = screen.getByLabelText('名前')
-    const emailInput = screen.getByLabelText('メールアドレス')
-    const passwordInput = screen.getByLabelText('パスワード')
+  it('名前が空の場合にエラーを表示する', async () => {
+    renderSignUpForm();
 
-    fireEvent.change(nameInput, { target: { value: 'Test User' } })
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-    fireEvent.change(passwordInput, { target: { value: 'Password123' } })
+    await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
-    mockSignUp.mockRejectedValueOnce(new Error('既に登録されているメールアドレスです'))
+    const errorMessage = await screen.findByText('名前は必須です');
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveClass('text-destructive');
+  });
 
-    const submitButton = screen.getByRole('button', { name: '新規登録' })
-    fireEvent.click(submitButton)
+  it('メールアドレスが無効な場合にエラーを表示する', async () => {
+    renderSignUpForm();
 
-    await waitFor(() => {
-      const errorMessages = screen.getAllByRole('alert')
-      expect(errorMessages).toHaveLength(1)
-      expect(errorMessages[0]).toHaveTextContent('既に登録されているメールアドレスです')
-    })
-  })
-}) 
+    await userEvent.type(screen.getByLabelText('メールアドレス'), 'invalid-email');
+    await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
+
+    const errorMessage = await screen.findByText('メールアドレスの形式が正しくありません');
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveClass('text-destructive');
+  });
+
+  it('パスワードが一致しない場合にエラーを表示する', async () => {
+    renderSignUpForm();
+
+    await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+    await userEvent.type(screen.getByLabelText('パスワード（確認）'), 'DifferentPassword123');
+    await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
+
+    const errorMessage = await screen.findByText('パスワードが一致しません');
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveClass('text-destructive');
+  });
+
+  it('サインアップに失敗した場合にエラーを表示する', async () => {
+    const { signUp } = renderSignUpForm();
+    signUp.mockRejectedValue(new Error('このメールアドレスは既に登録されています'));
+
+    await userEvent.type(screen.getByLabelText('名前'), '山田 太郎');
+    await userEvent.type(screen.getByLabelText('メールアドレス'), 'test@example.com');
+    await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+    await userEvent.type(screen.getByLabelText('パスワード（確認）'), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
+
+    const errorMessage = await screen.findByText('このメールアドレスは既に登録されています');
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage).toHaveClass('text-destructive');
+  });
+}); 

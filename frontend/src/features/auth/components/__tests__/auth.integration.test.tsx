@@ -1,146 +1,128 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-import { LoginForm } from '@/features/auth/components/LoginForm';
-import { SignUpForm } from '@/features/auth/components/SignUpForm';
-import { AuthProvider } from '@/features/auth/contexts/AuthContext';
-import { signIn, signUp } from '@/features/auth/api';
+import { SignInForm } from '../SignInForm';
+import { SignUpForm } from '../SignUpForm';
+import { useAuth } from '../../hooks/useAuth';
+import { AuthProvider } from '../../contexts/AuthContext';
 
-// モックの設定
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
   }),
 }));
 
-vi.mock('../api', () => ({
-  signIn: vi.fn(),
-  signUp: vi.fn(),
+vi.mock('../../hooks/useAuth', () => ({
+  useAuth: vi.fn(),
 }));
 
-const renderWithAuth = (component: React.ReactNode) => {
-  return render(<AuthProvider>{component}</AuthProvider>);
-};
-
-describe('認証フロー', () => {
+describe('認証フォーム', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('ログインフォーム', () => {
-    it('正常にログインできること', async () => {
-      const mockUser = {
-        id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
-      };
-      const mockToken = 'mock-token';
-
-      vi.mocked(signIn).mockResolvedValueOnce({
-        user: mockUser,
-        token: mockToken,
+    const renderSignInForm = () => {
+      const login = vi.fn();
+      vi.mocked(useAuth).mockReturnValue({
+        login,
+        signUp: vi.fn(),
+        logout: vi.fn(),
+        user: null,
+        isAuthenticated: false,
       });
 
-      renderWithAuth(<LoginForm />);
+      return {
+        login,
+        ...render(
+          <AuthProvider>
+            <SignInForm />
+          </AuthProvider>
+        ),
+      };
+    };
 
-      // フォームに入力
-      const emailInput = screen.getByPlaceholderText('example@example.com');
-      const passwordInput = screen.getByPlaceholderText('********');
-      const submitButton = screen.getByText('ログイン');
+    it('正しい認証情報でログインできること', async () => {
+      const { login } = renderSignInForm();
 
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'Password123' } });
-      fireEvent.click(submitButton);
+      await userEvent.type(screen.getByLabelText('メールアドレス'), 'test@example.com');
+      await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+      await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
-      // APIが呼び出されたことを確認
       await waitFor(() => {
-        expect(signIn).toHaveBeenCalledWith({
+        expect(login).toHaveBeenCalledWith({
           email: 'test@example.com',
           password: 'Password123',
         });
       });
     });
 
-    it('ログインエラーが表示されること', async () => {
-      const errorMessage = 'メールアドレスまたはパスワードが間違っています';
-      vi.mocked(signIn).mockRejectedValueOnce(new Error(errorMessage));
+    it('メールアドレスの形式が正しくない場合エラーが表示されること', async () => {
+      renderSignInForm();
 
-      renderWithAuth(<LoginForm />);
+      await userEvent.type(screen.getByLabelText('メールアドレス'), 'invalid-email');
+      await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+      await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
-      // フォームに入力
-      const emailInput = screen.getByPlaceholderText('example@example.com');
-      const passwordInput = screen.getByPlaceholderText('********');
-      const submitButton = screen.getByText('ログイン');
-
-      fireEvent.change(emailInput, { target: { value: 'wrong@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'WrongPass123' } });
-      fireEvent.click(submitButton);
-
-      // エラーメッセージが表示されることを確認
-      await waitFor(() => {
-        expect(screen.getByText(errorMessage)).toBeInTheDocument();
-      });
+      const errorMessage = await screen.findByText('メールアドレスの形式が正しくありません');
+      expect(errorMessage).toBeInTheDocument();
+      expect(errorMessage).toHaveClass('text-destructive');
     });
   });
 
   describe('サインアップフォーム', () => {
-    it('正常に登録できること', async () => {
-      const mockUser = {
-        id: '1',
-        name: 'New User',
-        email: 'new@example.com',
-      };
-      const mockToken = 'mock-token';
-
-      vi.mocked(signUp).mockResolvedValueOnce({
-        user: mockUser,
-        token: mockToken,
+    const renderSignUpForm = () => {
+      const signUp = vi.fn();
+      vi.mocked(useAuth).mockReturnValue({
+        login: vi.fn(),
+        signUp,
+        logout: vi.fn(),
+        user: null,
+        isAuthenticated: false,
       });
 
-      renderWithAuth(<SignUpForm />);
+      return {
+        signUp,
+        ...render(
+          <AuthProvider>
+            <SignUpForm />
+          </AuthProvider>
+        ),
+      };
+    };
 
-      // フォームに入力
-      const nameInput = screen.getByPlaceholderText('山田 太郎');
-      const emailInput = screen.getByPlaceholderText('example@example.com');
-      const passwordInput = screen.getByPlaceholderText('********');
-      const submitButton = screen.getByText('新規登録');
+    it('正しい情報でサインアップできること', async () => {
+      const { signUp } = renderSignUpForm();
 
-      fireEvent.change(nameInput, { target: { value: 'New User' } });
-      fireEvent.change(emailInput, { target: { value: 'new@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'NewPass123' } });
-      fireEvent.click(submitButton);
+      await userEvent.type(screen.getByLabelText('名前'), 'テスト ユーザー');
+      await userEvent.type(screen.getByLabelText('メールアドレス'), 'test@example.com');
+      await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+      await userEvent.type(screen.getByLabelText('パスワード（確認）'), 'Password123');
+      await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
-      // APIが呼び出されたことを確認
       await waitFor(() => {
         expect(signUp).toHaveBeenCalledWith({
-          name: 'New User',
-          email: 'new@example.com',
-          password: 'NewPass123',
+          name: 'テスト ユーザー',
+          email: 'test@example.com',
+          password: 'Password123',
+          confirmPassword: 'Password123',
         });
       });
     });
 
-    it('登録エラーが表示されること', async () => {
-      const errorMessage = '既に登録されているメールアドレスです';
-      vi.mocked(signUp).mockRejectedValueOnce(new Error(errorMessage));
+    it('パスワードが一致しない場合エラーが表示されること', async () => {
+      renderSignUpForm();
 
-      renderWithAuth(<SignUpForm />);
+      await userEvent.type(screen.getByLabelText('名前'), 'テスト ユーザー');
+      await userEvent.type(screen.getByLabelText('メールアドレス'), 'test@example.com');
+      await userEvent.type(screen.getByLabelText('パスワード'), 'Password123');
+      await userEvent.type(screen.getByLabelText('パスワード（確認）'), 'DifferentPassword123');
+      await userEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
-      // フォームに入力
-      const nameInput = screen.getByPlaceholderText('山田 太郎');
-      const emailInput = screen.getByPlaceholderText('example@example.com');
-      const passwordInput = screen.getByPlaceholderText('********');
-      const submitButton = screen.getByText('新規登録');
-
-      fireEvent.change(nameInput, { target: { value: 'Existing User' } });
-      fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'ExistPass123' } });
-      fireEvent.click(submitButton);
-
-      // エラーメッセージが表示されることを確認
-      await waitFor(() => {
-        expect(screen.getByText(errorMessage)).toBeInTheDocument();
-      });
+      const errorMessage = await screen.findByText('パスワードが一致しません');
+      expect(errorMessage).toBeInTheDocument();
+      expect(errorMessage).toHaveClass('text-destructive');
     });
   });
 }); 

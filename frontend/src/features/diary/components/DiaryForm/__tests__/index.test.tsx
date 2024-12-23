@@ -1,26 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-import { DiaryForm } from '..';
+import { describe, it, expect, vi } from 'vitest';
+import { DiaryForm } from '../index';
 
-// Next.jsのルーターをモック
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    back: vi.fn(),
-  }),
-}));
-
-// toastをモック
-vi.mock('sonner', () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-  },
-}));
+const mockOnSubmit = vi.fn();
 
 describe('DiaryForm', () => {
-  const mockOnSubmit = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -33,7 +17,6 @@ describe('DiaryForm', () => {
     expect(screen.getByLabelText('今日の気分')).toBeInTheDocument();
     expect(screen.getByLabelText('タグ')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '保存' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
   });
 
   it('初期値が正しく設定されること', () => {
@@ -44,7 +27,12 @@ describe('DiaryForm', () => {
       tags: 'テスト,日記',
     };
 
-    render(<DiaryForm initialData={initialData} onSubmit={mockOnSubmit} />);
+    render(
+      <DiaryForm
+        initialData={initialData}
+        onSubmit={mockOnSubmit}
+      />
+    );
 
     expect(screen.getByLabelText('タイトル')).toHaveValue('テストタイトル');
     expect(screen.getByLabelText('内容')).toHaveValue('テスト内容');
@@ -55,14 +43,10 @@ describe('DiaryForm', () => {
   it('必須フィールドが空の場合にエラーを表示すること', async () => {
     render(<DiaryForm onSubmit={mockOnSubmit} />);
 
-    const submitButton = screen.getByRole('button', { name: '保存' });
-    fireEvent.click(submitButton);
+    fireEvent.click(screen.getByRole('button', { name: '保存' }));
 
     await waitFor(() => {
-      const errorMessages = screen.getAllByRole('alert');
-      expect(errorMessages).toHaveLength(2);
-      expect(errorMessages[0]).toHaveTextContent('必須項目です');
-      expect(errorMessages[1]).toHaveTextContent('必須項目です');
+      expect(screen.getAllByText('必須項目です')).toHaveLength(2);
     });
 
     expect(mockOnSubmit).not.toHaveBeenCalled();
@@ -71,18 +55,20 @@ describe('DiaryForm', () => {
   it('フォームの送信が成功すること', async () => {
     render(<DiaryForm onSubmit={mockOnSubmit} />);
 
-    const titleInput = screen.getByLabelText('タイトル');
-    const contentInput = screen.getByLabelText('内容');
-    const moodInput = screen.getByLabelText('今日の気分');
-    const tagsInput = screen.getByLabelText('タグ');
+    fireEvent.change(screen.getByLabelText('タイトル'), {
+      target: { value: 'テストタイトル' },
+    });
+    fireEvent.change(screen.getByLabelText('内容'), {
+      target: { value: 'テスト内容' },
+    });
+    fireEvent.change(screen.getByLabelText('今日の気分'), {
+      target: { value: '楽しい' },
+    });
+    fireEvent.change(screen.getByLabelText('タグ'), {
+      target: { value: 'テスト,日記' },
+    });
 
-    fireEvent.change(titleInput, { target: { value: 'テストタイトル' } });
-    fireEvent.change(contentInput, { target: { value: 'テスト内容' } });
-    fireEvent.change(moodInput, { target: { value: '楽しい' } });
-    fireEvent.change(tagsInput, { target: { value: 'テスト,日記' } });
-
-    const submitButton = screen.getByRole('button', { name: '保存' });
-    fireEvent.click(submitButton);
+    fireEvent.click(screen.getByRole('button', { name: '保存' }));
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith({
@@ -95,13 +81,12 @@ describe('DiaryForm', () => {
   });
 
   it('送信中は入力とボタンが無効化されること', async () => {
-    render(<DiaryForm onSubmit={mockOnSubmit} isSubmitting={true} />);
+    render(<DiaryForm onSubmit={mockOnSubmit} isSubmitting />);
 
     expect(screen.getByLabelText('タイトル')).toBeDisabled();
     expect(screen.getByLabelText('内容')).toBeDisabled();
     expect(screen.getByLabelText('今日の気分')).toBeDisabled();
     expect(screen.getByLabelText('タグ')).toBeDisabled();
     expect(screen.getByRole('button', { name: '保存' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeDisabled();
   });
 }); 

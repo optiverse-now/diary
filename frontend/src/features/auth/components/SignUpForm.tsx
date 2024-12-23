@@ -5,16 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { signUp } from '@/features/auth/api';
-import { useAuth } from '@/features/auth/contexts/AuthContext';
-import { SignUpInput, signUpSchema } from '@/features/auth/types';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
+import { useAuth } from '../hooks/useAuth';
+import { signUpSchema } from '../schemas/auth';
+import type { SignUpInput } from '../types';
 
 export const SignUpForm = () => {
   const router = useRouter();
-  const { setAuth } = useAuth();
+  const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +24,7 @@ export const SignUpForm = () => {
       name: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
     mode: 'onBlur',
   });
@@ -34,7 +35,6 @@ export const SignUpForm = () => {
 
     try {
       const response = await signUp(data);
-      setAuth(response.user, response.token);
       toast.success('アカウントを作成しました');
       router.push('/applications/diary');
     } catch (error) {
@@ -63,13 +63,13 @@ export const SignUpForm = () => {
               <FormLabel>名前</FormLabel>
               <FormControl>
                 <Input
-                  type="text"
-                  placeholder="山田 太郎"
-                  disabled={isLoading}
                   {...field}
+                  placeholder="山田 太郎"
+                  aria-label="名前"
+                  disabled={isLoading}
                 />
               </FormControl>
-              <FormMessage role="alert" />
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -82,13 +82,14 @@ export const SignUpForm = () => {
               <FormLabel>メールアドレス</FormLabel>
               <FormControl>
                 <Input
+                  {...field}
                   type="email"
                   placeholder="example@example.com"
+                  aria-label="メールアドレス"
                   disabled={isLoading}
-                  {...field}
                 />
               </FormControl>
-              <FormMessage role="alert" />
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -101,13 +102,34 @@ export const SignUpForm = () => {
               <FormLabel>パスワード</FormLabel>
               <FormControl>
                 <Input
+                  {...field}
                   type="password"
                   placeholder="********"
+                  aria-label="パスワード"
                   disabled={isLoading}
-                  {...field}
                 />
               </FormControl>
-              <FormMessage role="alert" />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>パスワード（確認）</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="password"
+                  placeholder="********"
+                  aria-label="パスワード（確認）"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

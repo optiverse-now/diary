@@ -1,122 +1,155 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { Context } from 'hono'
-import { PrismaClient } from '@prisma/client'
-import { signUp, signIn } from '../auth'
-import { hashPassword } from '../../lib/auth'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Context } from 'hono';
+import { signIn, signUp } from '../auth';
+import { prisma } from '../../lib/prisma';
+import { hashPassword, comparePasswords } from '../../lib/auth';
 
-const prisma = new PrismaClient()
+vi.mock('../../lib/prisma', () => ({
+  prisma: {
+    user: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    },
+  },
+}));
 
-type AuthResponse = {
-  data: {
-    user?: {
-      id: string
-      name: string
-      email: string
-    }
-    token?: string
-    error?: string
-  }
-  status?: number
-}
+vi.mock('../../lib/auth', () => ({
+  hashPassword: vi.fn(),
+  comparePasswords: vi.fn(),
+  generateToken: () => 'test-token',
+}));
 
-describe('Auth Controller', () => {
-  beforeEach(async () => {
-    // テストデータベースのクリーンアップ
-    await prisma.user.deleteMany()
-  })
+describe('認証コントローラー', () => {
+  let mockContext: Context;
+  const mockJson = vi.fn();
 
-  afterEach(async () => {
-    // テストデータベースのクリーンアップ
-    await prisma.user.deleteMany()
-  })
+  beforeEach(() => {
+    mockContext = {
+      req: {
+        json: vi.fn(),
+        raw: new Request('http://localhost'),
+        routeIndex: 0,
+        path: '/',
+        param: vi.fn(),
+        query: vi.fn(),
+        header: vi.fn(),
+        cookie: vi.fn(),
+      },
+      env: {},
+      finalized: false,
+      get: vi.fn(),
+      header: vi.fn(),
+      json: mockJson,
+      set: vi.fn(),
+      status: vi.fn(),
+      newResponse: vi.fn(),
+    } as unknown as Context;
+    vi.clearAllMocks();
+  });
 
   describe('signUp', () => {
-    it('新規ユーザーを正常に登録できる', async () => {
-      const mockContext = {
-        req: {
-          json: () => Promise.resolve({
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'Password123!'
-          })
-        },
-        json: (data: any, status?: number) => ({ data, status })
-      } as unknown as Context
+    it('新規ユーザーを作成できる', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.user.create).mockResolvedValue({
+        id: 'test-uuid',
+        name: 'テスト ユーザー',
+        email: 'test@example.com',
+        password: 'hashedPassword',
+        emailVerified: null,
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
+      vi.mocked(hashPassword).mockResolvedValue('hashedPassword');
 
-      const response = await signUp(mockContext) as AuthResponse
-      expect(response.data.user).toBeDefined()
-      expect(response.data.user?.email).toBe('test@example.com')
-      expect(response.data.token).toBeDefined()
-    })
+      vi.mocked(mockContext.req.json).mockResolvedValue({
+        name: 'テスト ユーザー',
+        email: 'test@example.com',
+        password: 'Password123',
+      });
 
-    it('既存のメールアドレスで登録を試みるとエラーになる', async () => {
-      // 既存ユーザーを作成
-      await prisma.user.create({
-        data: {
-          name: 'Existing User',
-          email: 'test@example.com',
-          password: await hashPassword('Password123!')
-        }
-      })
+      await signUp(mockContext);
 
-      const mockContext = {
-        req: {
-          json: () => Promise.resolve({
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'Password123!'
-          })
-        },
-        json: (data: any, status?: number) => ({ data, status })
-      } as unknown as Context
+      const result = mockJson.mock.calls[0][0];
+      expect(result).toHaveProperty('user');
+      expect(result.user).toHaveProperty('id');
+      expect(result.user).toHaveProperty('name', 'テスト ユーザー');
+      expect(result.user).toHaveProperty('email', 'test@example.com');
+      expect(result).toHaveProperty('token', 'test-token');
+    });
 
-      const response = await signUp(mockContext) as AuthResponse
-      expect(response.status).toBe(400)
-      expect(response.data.error).toBe('このメールアドレスは既に登録されています')
-    })
-  })
+    it('既存のメールアドレスの場合エラーを返す', async () => {
+      const existingUser = {
+        id: 'test-uuid',
+        name: 'テスト ユーザー',
+        email: 'test@example.com',
+        password: 'hashedPassword',
+        emailVerified: null,
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser);
+
+      vi.mocked(mockContext.req.json).mockResolvedValue({
+        name: 'テスト ユーザー',
+        email: 'test@example.com',
+        password: 'Password123',
+      });
+
+      await signUp(mockContext);
+
+      expect(mockJson).toHaveBeenCalledWith({
+        error: 'このメールアドレスは既に登録されています',
+      }, 400);
+    });
+  });
 
   describe('signIn', () => {
     it('正しい認証情報でログインできる', async () => {
-      // テストユーザーを作成
-      await prisma.user.create({
-        data: {
-          name: 'Test User',
-          email: 'test@example.com',
-          password: await hashPassword('Password123!')
-        }
-      })
+      const mockUser = {
+        id: 'test-uuid',
+        name: 'テスト ユーザー',
+        email: 'test@example.com',
+        password: 'hashedPassword',
+        emailVerified: null,
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      const mockContext = {
-        req: {
-          json: () => Promise.resolve({
-            email: 'test@example.com',
-            password: 'Password123!'
-          })
-        },
-        json: (data: any, status?: number) => ({ data, status })
-      } as unknown as Context
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser);
+      vi.mocked(comparePasswords).mockResolvedValue(true);
 
-      const response = await signIn(mockContext) as AuthResponse
-      expect(response.data.user).toBeDefined()
-      expect(response.data.user?.email).toBe('test@example.com')
-      expect(response.data.token).toBeDefined()
-    })
+      vi.mocked(mockContext.req.json).mockResolvedValue({
+        email: 'test@example.com',
+        password: 'Password123',
+      });
 
-    it('誤った認証情報でログインを試みるとエラーになる', async () => {
-      const mockContext = {
-        req: {
-          json: () => Promise.resolve({
-            email: 'test@example.com',
-            password: 'wrongpassword'
-          })
-        },
-        json: (data: any, status?: number) => ({ data, status })
-      } as unknown as Context
+      await signIn(mockContext);
 
-      const response = await signIn(mockContext) as AuthResponse
-      expect(response.status).toBe(401)
-      expect(response.data.error).toBe('メールアドレスまたはパスワードが間違っています')
-    })
-  })
-}) 
+      const result = mockJson.mock.calls[0][0];
+      expect(result).toHaveProperty('user');
+      expect(result.user).toHaveProperty('id');
+      expect(result.user).toHaveProperty('name', 'テスト ユーザー');
+      expect(result.user).toHaveProperty('email', 'test@example.com');
+      expect(result).toHaveProperty('token', 'test-token');
+    });
+
+    it('存在しないメールアドレスの場合エラーを返す', async () => {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+
+      vi.mocked(mockContext.req.json).mockResolvedValue({
+        email: 'nonexistent@example.com',
+        password: 'Password123',
+      });
+
+      await signIn(mockContext);
+
+      expect(mockJson).toHaveBeenCalledWith({
+        error: 'メールアドレスまたはパスワードが間違っています',
+      }, 401);
+    });
+  });
+}); 

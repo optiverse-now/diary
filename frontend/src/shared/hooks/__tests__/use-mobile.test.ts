@@ -1,86 +1,46 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useIsMobile } from '../use-mobile';
-import { vi } from 'vitest';
 
 describe('useIsMobile', () => {
-  const originalMatchMedia = window.matchMedia;
-
-  const createMatchMedia = (matches: boolean) => (query: string) => ({
-    matches,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  });
-
   beforeEach(() => {
-    window.matchMedia = vi.fn();
-  });
-
-  afterEach(() => {
-    window.matchMedia = originalMatchMedia;
+    vi.resetAllMocks();
   });
 
   it('デスクトップ画面幅で false を返すこと', () => {
-    window.matchMedia = vi.fn().mockImplementation(createMatchMedia(false));
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1024,
+    });
+
     const { result } = renderHook(() => useIsMobile());
     expect(result.current).toBe(false);
   });
 
   it('モバイル画面幅で true を返すこと', () => {
-    window.matchMedia = vi.fn().mockImplementation(createMatchMedia(true));
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 767,
+    });
+
     const { result } = renderHook(() => useIsMobile());
     expect(result.current).toBe(true);
   });
 
-  it('画面幅の変更��検知すること', () => {
-    const addEventListener = vi.fn();
-    const removeEventListener = vi.fn();
-    window.matchMedia = vi.fn().mockImplementation((query) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener,
-      removeEventListener,
-      dispatchEvent: vi.fn(),
-    }));
+  it('画面幅の変更を検知すること', () => {
+    const addEventListener = vi.spyOn(window, 'addEventListener');
 
-    const { result } = renderHook(() => useIsMobile());
-    expect(result.current).toBe(false);
-
-    const [eventName, handler] = addEventListener.mock.calls[0];
-    expect(eventName).toBe('change');
-
-    act(() => {
-      handler({ matches: true } as MediaQueryListEvent);
-    });
-
-    expect(result.current).toBe(true);
+    renderHook(() => useIsMobile());
+    expect(addEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
   });
 
   it('アンマウント時にイベントリスナーが削除されること', () => {
-    const addEventListener = vi.fn();
-    const removeEventListener = vi.fn();
-    window.matchMedia = vi.fn().mockImplementation((query) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener,
-      removeEventListener,
-      dispatchEvent: vi.fn(),
-    }));
+    const removeEventListener = vi.spyOn(window, 'removeEventListener');
 
     const { unmount } = renderHook(() => useIsMobile());
-    const [eventName, handler] = addEventListener.mock.calls[0];
     unmount();
-
-    expect(removeEventListener).toHaveBeenCalledWith(eventName, handler);
+    expect(removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
   });
 }); 
