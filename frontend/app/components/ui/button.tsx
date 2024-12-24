@@ -1,35 +1,34 @@
-import { forwardRef } from 'react'
+import React from 'react'
 import { cn } from '@/lib/utils'
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'outline' | 'ghost'
+  size?: 'default' | 'sm' | 'lg'
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', ...props }, ref) => {
-    return (
-      <button
-        className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-          {
-            'bg-primary text-white hover:bg-primary/90': variant === 'primary',
-            'bg-secondary text-gray-900 hover:bg-secondary/90': variant === 'secondary',
-            'border border-gray-200 bg-transparent hover:bg-gray-100': variant === 'outline',
-            'hover:bg-gray-100': variant === 'ghost',
-            'h-9 px-4 text-sm': size === 'sm',
-            'h-10 px-4 text-base': size === 'md',
-            'h-11 px-8 text-base': size === 'lg',
-          },
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-
-Button.displayName = 'Button'
-
-export default Button 
+export default function Button({
+  className,
+  variant = 'default',
+  size = 'default',
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      className={cn(
+        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        'disabled:pointer-events-none disabled:opacity-50',
+        {
+          'bg-primary text-white hover:bg-primary/90': variant === 'default',
+          'border-2 border-primary bg-transparent hover:bg-primary/10': variant === 'outline',
+          'hover:bg-primary/10': variant === 'ghost',
+          'h-10 px-4 py-2': size === 'default',
+          'h-9 px-3': size === 'sm',
+          'h-11 px-8': size === 'lg',
+        },
+        className
+      )}
+      {...props}
+    />
+  )
+} 
