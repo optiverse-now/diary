@@ -1,19 +1,17 @@
-module.exports = {
-  preset: 'ts-jest',
+/** @type {import('jest').Config} */
+const config = {
   testEnvironment: 'jsdom',
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/frontend/$1',
-    '^../../../../lib/(.*)$': '<rootDir>/frontend/lib/$1',
+    '^@/components/(.*)$': '<rootDir>/frontend/app/components/$1',
+    '^@/lib/(.*)$': '<rootDir>/frontend/lib/$1'
   },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  setupFilesAfterEnv: ['<rootDir>/frontend/tests/jest.setup.ts'],
+  testMatch: [
+    '<rootDir>/frontend/tests/**/*.test.ts?(x)'
+  ],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react',
-        esModuleInterop: true,
-      },
-    }],
-  },
-  moduleDirectories: ['node_modules', '<rootDir>'],
-} 
+    '^.+\\.(ts|tsx)$': 'babel-jest'
+  }
+};
+
+module.exports = config; 
