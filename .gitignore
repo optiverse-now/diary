@@ -44,3 +44,4 @@ yarn-error.log*
 
 # prisma
 /backend/prisma/migrations/
+node_modules

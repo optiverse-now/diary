@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  diaries   Diary[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Diary {
+  id        Int         @id @default(autoincrement())
+  title     String
+  content   String
+  user      User        @relation(fields: [userId], references: [id])
+  userId    Int
+  moods     DiaryMood[]
+  tags      DiaryTag[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Mood {
+  id      Int         @id @default(autoincrement())
+  name    String      @unique
+  diaries DiaryMood[]
+}
+
+model Tag {
+  id      Int        @id @default(autoincrement())
+  name    String     @unique
+  diaries DiaryTag[]
+}
+
+model DiaryMood {
+  diary   Diary @relation(fields: [diaryId], references: [id])
+  diaryId Int
+  mood    Mood  @relation(fields: [moodId], references: [id])
+  moodId  Int
+
+  @@id([diaryId, moodId])
+}
+
+model DiaryTag {
+  diary   Diary @relation(fields: [diaryId], references: [id])
+  diaryId Int
+  tag     Tag   @relation(fields: [tagId], references: [id])
+  tagId   Int
+
+  @@id([diaryId, tagId])
+} 
